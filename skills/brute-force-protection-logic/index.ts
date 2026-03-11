@@ -1,8 +1,9 @@
 /**
- * Calcula delay exponencial em milissegundos.
+ * Registro de tentativa falha.
  */
-export function getThrottleDelay(failCount: number): number {
-  // Why: Atrasar o atacante de forma exponencial torna o ataque de força bruta inviável em termos de tempo.
-  if (failCount < 3) return 0;
-  return Math.min(Math.pow(2, failCount) * 100, 30000); // Max 30s
+export async function onFailedLogin(userId: string) {
+  // Why: Impede que scripts automatizados testem milhões de senhas contra uma única conta em poucos minutos.
+  const attempts = await redis.incr(`fail:\${userId}`);
+  if (attempts > 5) await lockAccount(userId);
 }
+async function lockAccount(id: string) {}
